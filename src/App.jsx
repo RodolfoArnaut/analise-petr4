@@ -1,6 +1,6 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import {
-  BarChart3, LayoutDashboard, Newspaper, Settings,
+  BarChart3, LayoutDashboard, Settings,
   Play, RefreshCw, TrendingUp, TrendingDown, Minus,
   CheckCircle2, Zap, Globe, AlertCircle, Key, Eye, EyeOff,
   ShieldCheck, X, Info
@@ -277,7 +277,6 @@ function App() {
         <div className="nav-section">
           <div className="nav-label">Menu</div>
           <button className="nav-item active"><LayoutDashboard size={16} /> Dashboard</button>
-          <button className="nav-item"><Newspaper size={16} /> Histórico</button>
           <button
             className="nav-item"
             id="btn-open-token-settings"
