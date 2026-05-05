@@ -6,7 +6,7 @@ import {
   ShieldCheck, X, Info, Copy, Check
 } from 'lucide-react';
 import {
-  fetchNews, classifySentiment, generateSummary, calculateScore
+  fetchNews, classifySentiment, generateSummary, calculateScore, fetchQuote
 } from './api/pipeline';
 
 // =====================================================
@@ -223,6 +223,7 @@ export default function App() {
   const [copied, setCopied]                = useState(false);
   const [logs, setLogs] = useState([]);
   const [progress, setProgress] = useState({ current: 0, total: 0 });
+  const [quote, setQuote] = useState(null);
   const [freeUsesLeft, setFreeUsesLeft]    = useState(() => Math.max(0, FREE_LIMIT - getUsage().count));
   const logRef = useRef(null);
 
@@ -279,8 +280,18 @@ export default function App() {
     setLogs([]);
     setProgress({ current: 0, total: 0 });
     setTrend([]);
+    setQuote(null);
 
     try {
+      log(`Buscando cotação de ${ticker}...`, 'info');
+      const quoteData = await fetchQuote(ticker);
+      if (quoteData) {
+        setQuote(quoteData);
+        log(`Cotação: R$ ${quoteData.price.toFixed(2)} (${quoteData.changePercent >= 0 ? '+' : ''}${quoteData.changePercent.toFixed(2)}%)`, 'ok');
+      } else {
+        log(`Não foi possível obter cotação de ${ticker}.`, 'info');
+      }
+
       log(`Buscando notícias sobre ${ticker}...`, 'info');
       const { articles, source } = await fetchNews(ticker);
       setNewsSource(source);
@@ -417,7 +428,20 @@ export default function App() {
           </div>
           <div className="header-right">
             <div className="date-badge">{todayStr}</div>
-            <div className="asset-badge">PETR4</div>
+            <div className="asset-badge" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              {ticker}
+              {quote && (
+                <span style={{ 
+                  fontSize: '0.8rem', 
+                  color: quote.changePercent >= 0 ? '#10b981' : '#ef4444',
+                  backgroundColor: quote.changePercent >= 0 ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                  padding: '2px 6px',
+                  borderRadius: '4px'
+                }}>
+                  R$ {quote.price.toFixed(2)} ({quote.changePercent >= 0 ? '+' : ''}{quote.changePercent.toFixed(2)}%)
+                </span>
+              )}
+            </div>
           </div>
         </header>
 

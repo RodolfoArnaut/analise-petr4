@@ -134,36 +134,43 @@ export async function fetchNews(symbol = 'PETR4') {
     const res = await fetch(
       `https://gnews.io/api/v4/search?q=${encodeURIComponent(symbol)}&lang=pt&country=br&max=8&apikey=demo`
     );
-    if (res.ok) {
-      const data = await res.json();
-      if (data.articles?.length) {
-        return {
-          articles: data.articles.map(a => ({
-            title: a.title,
-            content: a.description || '',
-            published_at: a.publishedAt,
-            source: a.source?.name || 'GNews',
-            url: a.url
-          })),
-          source: 'GNews API'
-        };
-      }
+    
+    if (!res.ok) {
+      throw new Error(`A API de notícias retornou um erro (${res.status}). A chave 'demo' pode estar com limite excedido.`);
     }
-  } catch (_) {}
 
-  return { articles: getDemoNews(), source: 'Demo (offline)' };
+    const data = await res.json();
+    
+    if (!data.articles || data.articles.length === 0) {
+      throw new Error(`Nenhuma notícia recente encontrada para '${symbol}'.`);
+    }
+
+    return {
+      articles: data.articles.map(a => ({
+        title: a.title,
+        content: a.description || '',
+        published_at: a.publishedAt,
+        source: a.source?.name || 'GNews',
+        url: a.url
+      })),
+      source: 'GNews API'
+    };
+  } catch (err) {
+    throw new Error(err.message || 'Falha ao buscar notícias na internet.');
+  }
 }
 
-function getDemoNews() {
-  const now = Date.now();
-  return [
-    { title: 'Petrobras registra lucro líquido recorde de R$ 38,2 bi no 1T26', source: 'InfoMoney', published_at: new Date(now - 86400000).toISOString() },
-    { title: 'Queda no preço do Brent pressiona margens da Petrobras', source: 'Valor Econômico', published_at: new Date(now - 2 * 86400000).toISOString() },
-    { title: 'Analistas elevam preço-alvo de PETR4 após dividendos robustos', source: 'BTG Pactual', published_at: new Date(now - 3 * 86400000).toISOString() },
-    { title: 'Greve dos petroleiros pode paralisar produção no pré-sal', source: 'G1 Economia', published_at: new Date(now - 4 * 86400000).toISOString() },
-    { title: 'Petrobras anuncia expansão em energia renovável com investimento de US$ 6 bi', source: 'Reuters', published_at: new Date(now - 5 * 86400000).toISOString() },
-    { title: 'Governo descarta interferência na política de preços da Petrobras', source: 'Folha', published_at: new Date(now - 6 * 86400000).toISOString() },
-  ];
+// =====================================================
+// STOCK QUOTE FETCHING (Real-time via Proxy)
+// =====================================================
+export async function fetchQuote(symbol) {
+  try {
+    const res = await fetch(`/api/quote?ticker=${encodeURIComponent(symbol)}`);
+    if (!res.ok) return null;
+    return await res.json();
+  } catch (e) {
+    return null;
+  }
 }
 
 // =====================================================
