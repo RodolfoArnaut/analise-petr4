@@ -131,32 +131,17 @@ async function fetchAI(apiKey, messages, modelIndex = 0) {
 // =====================================================
 export async function fetchNews(symbol = 'PETR4') {
   try {
-    const res = await fetch(
-      `https://gnews.io/api/v4/search?q=${encodeURIComponent(symbol)}&lang=pt&country=br&max=8&apikey=demo`
-    );
+    const res = await fetch(`/api/news?ticker=${encodeURIComponent(symbol)}`);
     
     if (!res.ok) {
-      throw new Error(`A API de notícias retornou um erro (${res.status}). A chave 'demo' pode estar com limite excedido.`);
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData.error || `Erro do servidor (${res.status}) ao buscar notícias.`);
     }
 
     const data = await res.json();
-    
-    if (!data.articles || data.articles.length === 0) {
-      throw new Error(`Nenhuma notícia recente encontrada para '${symbol}'.`);
-    }
-
-    return {
-      articles: data.articles.map(a => ({
-        title: a.title,
-        content: a.description || '',
-        published_at: a.publishedAt,
-        source: a.source?.name || 'GNews',
-        url: a.url
-      })),
-      source: 'GNews API'
-    };
+    return data; // { articles: [...], source: 'Google News' }
   } catch (err) {
-    throw new Error(err.message || 'Falha ao buscar notícias na internet.');
+    throw new Error(err.message || 'Falha de conexão ao buscar notícias.');
   }
 }
 
