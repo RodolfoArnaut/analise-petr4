@@ -1,16 +1,31 @@
-# React + Vite
+# PETRA Analysis 📈🤖
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Uma aplicação avançada de análise de sentimentos para o mercado financeiro (B3). Combina léxico financeiro puro no cliente com a potência de LLMs (Mistral, Llama, OpenChat) para gerar scores preditivos e resumos informativos sobre ativos como PETR4.
 
-Currently, two official plugins are available:
+## 🌟 Funcionalidades
+* **Pipeline Híbrido**: Processamento super-rápido usando `lexicalScore` combinado com a precisão de LLMs (via OpenRouter).
+* **Multi-Ativos**: Pesquise por PETR4, VALE3, ITUB4, etc.
+* **Serverless Seguro**: O token da OpenRouter está blindado no backend através de Vercel Serverless Functions (`/api/chat`).
+* **Limite de Uso (Freemium)**: Sistema que permite 3 consultas locais gratuitas usando localStorage antes de solicitar o token do próprio usuário.
+* **Supabase Pronto**: Preparado para Auth, Perfis (Free/Premium) e RLS utilizando o `supabaseClient`.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 🛠️ Tecnologias
+* **Frontend**: React + Vite + CSS puro (Glassmorphism & Dark Mode)
+* **API/LLM**: Vercel Serverless Functions + OpenRouter
+* **Database**: Supabase (PostgreSQL + RLS)
+* **Deploy**: Vercel
 
-## React Compiler
+## 🚀 Como Rodar Localmente
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+1. Clone o repositório.
+2. Crie um arquivo `.env` baseado no `.env.example`:
+   ```env
+   VITE_SUPABASE_URL=https://[YOUR_URL].supabase.co
+   VITE_SUPABASE_ANON_KEY=[YOUR_KEY]
+   OPENROUTER_API_KEY=sk-or-v1-[YOUR_KEY]
+   ```
+3. Instale as dependências: `npm install`
+4. Rode o ambiente de desenvolvimento: `npm run dev`
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## 📦 Deploy
+Projetado para ser implantado na **Vercel** sem configurações adicionais graças ao mapeamento automático da pasta `api/` para Serverless Functions.

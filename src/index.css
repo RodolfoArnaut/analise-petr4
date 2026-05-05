@@ -131,6 +131,47 @@ body {
   color: var(--accent-cyan);
 }
 
+.ticker-search-box {
+  display: flex;
+  gap: 0.4rem;
+  padding: 0 0.5rem;
+}
+
+.ticker-input {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 0.45rem 0.75rem;
+  color: var(--text-primary);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  width: 100%;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.ticker-input:focus {
+  border-color: var(--accent-cyan);
+}
+
+.ticker-btn {
+  background: var(--accent-cyan-dim);
+  color: var(--accent-cyan);
+  border: 1px solid rgba(0, 212, 255, 0.2);
+  border-radius: var(--radius-sm);
+  padding: 0 0.6rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.ticker-btn:hover {
+  background: var(--accent-cyan);
+  color: #000;
+}
+
 .sidebar-footer {
   margin-top: auto;
   padding: 0.75rem;
@@ -599,6 +640,44 @@ body {
   color: var(--text-secondary);
   font-weight: 500;
 }
+
+/* ==================== TREND CHART ==================== */
+.trend-container {
+  width: 100%;
+  padding: 0.5rem 0;
+}
+
+.empty-trend {
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  border: 1px dashed var(--border-color);
+  border-radius: var(--radius-sm);
+}
+
+/* ==================== KEYWORDS ==================== */
+.keyword-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.5rem;
+}
+
+.keyword-tag {
+  font-size: 0.65rem;
+  font-family: 'JetBrains Mono', monospace;
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+}
+
+.keyword-tag.pos { color: var(--accent-green); border-color: var(--accent-green-dim); }
+.keyword-tag.neg { color: var(--accent-red); border-color: var(--accent-red-dim); }
+
 
 /* ==================== SCROLLBAR ==================== */
 ::-webkit-scrollbar {
