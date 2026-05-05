@@ -90,7 +90,7 @@ export function lexicalScore(text) {
 // AI — OpenRouter with automatic model fallback
 // If apiKey === 'system', it securely routes to Vercel Serverless Function
 // =====================================================
-async function fetchAI(apiKey, messages, modelIndex = 0) {
+async function fetchAI(apiKey, messages, modelIndex = 0, maxTokens = 60) {
   if (modelIndex >= MODELS.length) throw new Error('Todos os modelos falharam.');
 
   let url = 'https://openrouter.ai/api/v1/chat/completions';
@@ -102,7 +102,7 @@ async function fetchAI(apiKey, messages, modelIndex = 0) {
   let body = {
     messages,
     temperature: 0.1,
-    max_tokens: 60
+    max_tokens: maxTokens
   };
 
   if (apiKey === 'system') {
@@ -186,20 +186,41 @@ export async function classifySentiment(apiKey, title, modelIndex = 0) {
 }
 
 // =====================================================
-// SUMMARY GENERATION
+// SUMMARY GENERATION (Now returns structured data)
 // =====================================================
 export async function generateSummary(apiKey, stats, modelIndex = 0) {
   const { text } = await fetchAI(apiKey, [
     {
       role: 'system',
-      content: 'Gere um resumo financeiro objetivo em português. Máximo 20 palavras. Retorne APENAS o texto.'
+      content: `Você é um analista quantitativo sênior. Baseado nas métricas fornecidas, gere APENAS um JSON válido com esta exata estrutura (sem markdown ou \`\`\`):
+{
+  "summary": "Resumo geral do sentimento em até 25 palavras.",
+  "insight": "Frase única focada em tomada de decisão (ex: Sentimento sustentado por dividendos).",
+  "risk": "Principal fator de risco ou volatilidade atual em 1 frase curta."
+}`
     },
     {
       role: 'user',
       content: `Positivas:${stats.pos} Negativas:${stats.neg} Neutras:${stats.neu} Score:${stats.score.toFixed(2)}`
     }
-  ], modelIndex);
-  return text.replace(/^[{"'`\s]+|[}"'`\s]+$/g, '').substring(0, 200);
+  ], modelIndex, 300);
+  
+  try {
+    const cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();
+    const parsed = JSON.parse(cleanText);
+    return {
+      summary: parsed.summary || 'Sem resumo.',
+      insight: parsed.insight || 'Tendência neutra/indefinida.',
+      risk: parsed.risk || 'Dados insuficientes para calcular risco.'
+    };
+  } catch (e) {
+    // Fallback if AI fails to return JSON
+    return {
+      summary: text.substring(0, 150) + '...',
+      insight: 'Falha ao gerar insight estruturado.',
+      risk: 'Atenção à volatilidade do mercado.'
+    };
+  }
 }
 
 // =====================================================

@@ -327,13 +327,15 @@ export default function App() {
       setStats(finalStats);
       log(`Score final: ${finalStats.score.toFixed(2)} (${finalStats.pos}P · ${finalStats.neg}N · ${finalStats.neu}U)`, 'ok');
 
-      log('Gerando resumo com IA...', 'info');
-      const summary = await generateSummary(tokenToUse, finalStats, selectedModel);
-      log(`Resumo: "${summary}"`, 'ok');
+      log('Gerando análise completa com IA...', 'info');
+      const aiData = await generateSummary(tokenToUse, finalStats, selectedModel);
+      log(`Resumo gerado.`, 'ok');
 
       const today = new Date();
       setAnalysis({
-        summary,
+        summary: aiData.summary,
+        insight: aiData.insight,
+        risk: aiData.risk,
         period_start: new Date(today - 7 * 86400000).toISOString().split('T')[0],
         period_end: today.toISOString().split('T')[0]
       });
@@ -428,18 +430,23 @@ export default function App() {
           </div>
           <div className="header-right">
             <div className="date-badge">{todayStr}</div>
-            <div className="asset-badge" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              {ticker}
-              {quote && (
-                <span style={{ 
-                  fontSize: '0.8rem', 
-                  color: quote.changePercent >= 0 ? '#10b981' : '#ef4444',
-                  backgroundColor: quote.changePercent >= 0 ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-                  padding: '2px 6px',
-                  borderRadius: '4px'
-                }}>
-                  R$ {quote.price.toFixed(2)} ({quote.changePercent >= 0 ? '+' : ''}{quote.changePercent.toFixed(2)}%)
-                </span>
+            <div className="asset-panel" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', background: 'rgba(255,255,255,0.03)', padding: '0.6rem 1rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <strong style={{ fontSize: '1.2rem', fontFamily: 'JetBrains Mono, monospace' }}>{ticker}</strong>
+                {quote && (
+                  <span style={{ fontSize: '1.2rem', fontWeight: 600 }}>R$ {quote.price.toFixed(2)}</span>
+                )}
+              </div>
+              {quote ? (
+                <div style={{ display: 'flex', gap: '0.75rem', fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>
+                  <span style={{ color: quote.changePercent >= 0 ? '#10b981' : '#ef4444', fontWeight: 600 }}>
+                    {quote.changePercent >= 0 ? '▲' : '▼'} {quote.changePercent.toFixed(2)}%
+                  </span>
+                  <span>Vol: {(quote.volume / 1000000).toFixed(1)}M</span>
+                  <span>⏱ {quote.lastUpdate}</span>
+                </div>
+              ) : (
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Cotação pendente</div>
               )}
             </div>
           </div>
@@ -525,12 +532,27 @@ export default function App() {
             )}
           </div>
 
-          {/* SUMMARY */}
+          {/* SUMMARY & INSIGHTS */}
           {analysis && (
             <div className="card summary-card">
-              <div className="card-title"><Zap size={12} /> Resumo — IA</div>
-              <p className="summary-text">{analysis.summary}</p>
-              <p className="summary-period">{analysis.period_start} → {analysis.period_end}</p>
+              <div className="card-title"><Zap size={12} /> Resumo Analítico</div>
+              <p className="summary-text" style={{ marginBottom: '1.5rem' }}>{analysis.summary}</p>
+              
+              <div className="ux-decision-box insight-box" style={{ background: 'rgba(16, 185, 129, 0.05)', borderLeft: '4px solid #10b981', padding: '1rem', borderRadius: '4px 8px 8px 4px', marginBottom: '1rem' }}>
+                <strong style={{ color: '#10b981', display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.3rem', fontSize: '0.85rem' }}>
+                  📌 Insight automático
+                </strong>
+                <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-main)' }}>{analysis.insight}</p>
+              </div>
+
+              <div className="ux-decision-box risk-box" style={{ background: 'rgba(239, 68, 68, 0.05)', borderLeft: '4px solid #ef4444', padding: '1rem', borderRadius: '4px 8px 8px 4px', marginBottom: '1.5rem' }}>
+                <strong style={{ color: '#ef4444', display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.3rem', fontSize: '0.85rem' }}>
+                  ⚠️ Risco
+                </strong>
+                <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-main)' }}>{analysis.risk}</p>
+              </div>
+
+              <p className="summary-period" style={{ textAlign: 'right' }}>Análise baseada em dados: {analysis.period_start} → {analysis.period_end}</p>
             </div>
           )}
 

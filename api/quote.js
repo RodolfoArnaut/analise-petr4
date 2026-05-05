@@ -31,13 +31,17 @@ export default async function handler(req, res) {
     const prevClose = meta.chartPreviousClose;
     const change = price - prevClose;
     const changePercent = (change / prevClose) * 100;
+    const volume = meta.regularMarketVolume || 0;
+    const time = meta.regularMarketTime ? new Date(meta.regularMarketTime * 1000).toLocaleTimeString('pt-BR') : new Date().toLocaleTimeString('pt-BR');
 
     res.status(200).json({
       symbol: meta.symbol,
       price: price,
       currency: meta.currency,
       change: change,
-      changePercent: changePercent
+      changePercent: changePercent,
+      volume: volume,
+      lastUpdate: time
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
