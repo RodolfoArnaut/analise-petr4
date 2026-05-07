@@ -3,7 +3,7 @@ import {
   BarChart3, LayoutDashboard, Settings,
   Play, RefreshCw, TrendingUp, TrendingDown, Minus,
   CheckCircle2, Zap, Globe, AlertCircle, Key, Eye, EyeOff,
-  ShieldCheck, X, Info, Copy, Check
+  ShieldCheck, X, Info, Copy, Check, ExternalLink
 } from 'lucide-react';
 import {
   fetchNews, classifySentiment, generateSummary, calculateScore, fetchQuote
@@ -642,6 +642,11 @@ export default function App() {
                     <div className="news-meta">
                       {news.source && <span>{news.source} · </span>}
                       {news.published_at && new Date(news.published_at).toLocaleDateString('pt-BR')}
+                      {news.url && (
+                        <a href={news.url} target="_blank" rel="noopener noreferrer" className="news-link">
+                          · Ver notícia <ExternalLink size={10} style={{ marginLeft: '2px' }} />
+                        </a>
+                      )}
                     </div>
                     {news.foundTerms && news.foundTerms.length > 0 && (
                       <div className="keyword-list">

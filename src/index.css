@@ -506,6 +506,20 @@ body {
   margin-top: 0.2rem;
 }
 
+.news-link {
+  color: var(--accent-cyan);
+  text-decoration: none;
+  font-weight: 500;
+  transition: opacity 0.2s;
+  display: inline-flex;
+  align-items: center;
+}
+
+.news-link:hover {
+  opacity: 0.8;
+  text-decoration: underline;
+}
+
 .sentiment-tag {
   text-transform: uppercase;
   font-size: 0.65rem;
