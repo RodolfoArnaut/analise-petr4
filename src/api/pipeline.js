@@ -188,37 +188,46 @@ export async function classifySentiment(apiKey, title, modelIndex = 0) {
 // =====================================================
 // SUMMARY GENERATION (Now returns structured data)
 // =====================================================
-export async function generateSummary(apiKey, stats, modelIndex = 0) {
+export async function generateSummary(apiKey, stats, newsItems, modelIndex = 0) {
+  const titles = newsItems.slice(0, 10).map(n => `- ${n.title}`).join('\n');
+  
   const { text } = await fetchAI(apiKey, [
     {
       role: 'system',
-      content: `Você é um analista quantitativo sênior. Baseado nas métricas fornecidas, gere APENAS um JSON válido com esta exata estrutura (sem markdown ou \`\`\`):
+      content: `Você é um analista sênior da Liberty Analytics. Analise o contexto das notícias e as métricas para gerar um relatório robusto.
+Responda APENAS com um JSON válido, sem blocos de código ou markdown.
+Estrutura:
 {
-  "summary": "Resumo geral do sentimento em até 25 palavras.",
-  "insight": "Frase única focada em tomada de decisão (ex: Sentimento sustentado por dividendos).",
-  "risk": "Principal fator de risco ou volatilidade atual em 1 frase curta."
+  "summary": "Resumo detalhado (mínimo 60 palavras) conectando as notícias ao sentimento geral.",
+  "insight": "Análise técnica para tomada de decisão (mínimo 40 palavras).",
+  "risk": "Fatores de risco específicos identificados (mínimo 40 palavras)."
 }`
     },
     {
       role: 'user',
-      content: `Positivas:${stats.pos} Negativas:${stats.neg} Neutras:${stats.neu} Score:${stats.score.toFixed(2)}`
+      content: `Métricas: Positivas:${stats.pos} Negativas:${stats.neg} Neutras:${stats.neu} Score:${stats.score.toFixed(2)}
+Principais notícias:
+${titles}`
     }
-  ], modelIndex, 300);
+  ], modelIndex, 800);
   
   try {
-    const cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();
+    // Tenta extrair JSON caso a IA envolva em ```json ou texto extra
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    const cleanText = jsonMatch ? jsonMatch[0] : text;
     const parsed = JSON.parse(cleanText);
+    
     return {
-      summary: parsed.summary || 'Sem resumo.',
-      insight: parsed.insight || 'Tendência neutra/indefinida.',
-      risk: parsed.risk || 'Dados insuficientes para calcular risco.'
+      summary: parsed.summary || 'Sem resumo disponível.',
+      insight: parsed.insight || 'Sem insight disponível.',
+      risk: parsed.risk || 'Sem análise de risco disponível.'
     };
   } catch (e) {
-    // Fallback if AI fails to return JSON
+    console.error('Erro ao processar JSON da IA:', e, text);
     return {
-      summary: text.substring(0, 150) + '...',
-      insight: 'Falha ao gerar insight estruturado.',
-      risk: 'Atenção à volatilidade do mercado.'
+      summary: text.length > 50 ? text : 'Erro ao gerar resumo detalhado. Verifique sua conexão ou token.',
+      insight: 'Não foi possível gerar um insight estruturado no momento.',
+      risk: 'Atenção redobrada à volatilidade devido à falha na análise técnica.'
     };
   }
 }

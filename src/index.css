@@ -551,17 +551,20 @@ body {
 }
 
 .summary-text {
-  font-size: 1.1rem;
-  line-height: 1.6;
-  font-weight: 500;
+  font-size: 1rem;
+  line-height: 1.7;
+  font-weight: 400;
   color: var(--text-primary);
+  margin-bottom: 1.5rem;
 }
 
 .summary-period {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   color: var(--text-muted);
-  margin-top: 0.75rem;
+  margin-top: 1.5rem;
   font-family: 'JetBrains Mono', monospace;
+  text-align: right;
+  display: block;
 }
 
 /* ==================== EMPTY STATE ==================== */
@@ -682,6 +685,45 @@ body {
 .keyword-tag.pos { color: var(--accent-green); border-color: var(--accent-green-dim); }
 .keyword-tag.neg { color: var(--accent-red); border-color: var(--accent-red-dim); }
 
+
+.ux-decision-box {
+  padding: 1.25rem;
+  border-radius: var(--radius-sm);
+  margin-bottom: 1rem;
+  border-left: 4px solid transparent;
+  transition: transform 0.2s ease;
+}
+
+.ux-decision-box:hover {
+  transform: translateX(4px);
+}
+
+.ux-decision-box.insight-box {
+  background: rgba(16, 185, 129, 0.05);
+  border-left-color: var(--accent-green);
+}
+
+.ux-decision-box.risk-box {
+  background: rgba(239, 68, 68, 0.05);
+  border-left-color: var(--accent-red);
+}
+
+.ux-decision-box strong {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.ux-decision-box p {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--text-primary);
+}
 
 /* ==================== SCROLLBAR ==================== */
 ::-webkit-scrollbar {

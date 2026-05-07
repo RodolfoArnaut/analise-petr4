@@ -331,9 +331,9 @@ export default function App() {
       setStats(finalStats);
       log(`Score final: ${finalStats.score.toFixed(2)} (${finalStats.pos}P · ${finalStats.neg}N · ${finalStats.neu}U)`, 'ok');
 
-      log('Gerando análise completa com IA...', 'info');
-      const aiData = await generateSummary(tokenToUse, finalStats, selectedModel);
-      log(`Resumo gerado.`, 'ok');
+      log('Gerando análise completa com IA baseada nas notícias...', 'info');
+      const aiData = await generateSummary(tokenToUse, finalStats, classified, selectedModel);
+      log(`Análise detalhada gerada com sucesso.`, 'ok');
 
       const today = new Date();
       setAnalysis({
@@ -557,23 +557,19 @@ export default function App() {
           {analysis && (
             <div className="card summary-card">
               <div className="card-title"><Zap size={12} /> Resumo Analítico</div>
-              <p className="summary-text" style={{ marginBottom: '1.5rem' }}>{analysis.summary}</p>
+              <p className="summary-text">{analysis.summary}</p>
               
-              <div className="ux-decision-box insight-box" style={{ background: 'rgba(16, 185, 129, 0.05)', borderLeft: '4px solid #10b981', padding: '1rem', borderRadius: '4px 8px 8px 4px', marginBottom: '1rem' }}>
-                <strong style={{ color: '#10b981', display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.3rem', fontSize: '0.85rem' }}>
-                  📌 Insight automático
-                </strong>
-                <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-main)' }}>{analysis.insight}</p>
+              <div className="ux-decision-box insight-box">
+                <strong>📌 Insight Automático</strong>
+                <p>{analysis.insight}</p>
               </div>
 
-              <div className="ux-decision-box risk-box" style={{ background: 'rgba(239, 68, 68, 0.05)', borderLeft: '4px solid #ef4444', padding: '1rem', borderRadius: '4px 8px 8px 4px', marginBottom: '1.5rem' }}>
-                <strong style={{ color: '#ef4444', display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.3rem', fontSize: '0.85rem' }}>
-                  ⚠️ Risco
-                </strong>
-                <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-main)' }}>{analysis.risk}</p>
+              <div className="ux-decision-box risk-box">
+                <strong>⚠️ Risco Identificado</strong>
+                <p>{analysis.risk}</p>
               </div>
 
-              <p className="summary-period" style={{ textAlign: 'right' }}>Análise baseada em dados: {analysis.period_start} → {analysis.period_end}</p>
+              <p className="summary-period">Análise baseada em dados: {analysis.period_start} → {analysis.period_end}</p>
             </div>
           )}
 
