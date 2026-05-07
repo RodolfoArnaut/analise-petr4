@@ -1,13 +1,14 @@
-# PETRA Analysis 📈🤖
+# Liberty Analytics 📈🤖
+ 
+Inteligência e Análise de Sentimento para Qualquer Ativo da B3. Combina um léxico financeiro avançado com a potência de LLMs (Mistral, Llama, OpenChat) para gerar scores preditivos e resumos informativos.
 
-Uma aplicação avançada de análise de sentimentos para o mercado financeiro (B3). Combina léxico financeiro no cliente com a potência de LLMs (Mistral, Llama, OpenChat) para gerar scores preditivos e resumos informativos sobre ativos como PETR4, VALE3, etc.
-
-## 🌟 Novas Funcionalidades
+## 🌟 Funcionalidades
+* **Ativos Dinâmicos**: Insira qualquer ticker da B3 (PETR4, VALE3, ITUB4, etc) para uma análise instantânea.
 * **Cotação em Tempo Real**: Painel dinâmico buscando dados via Yahoo Finance (Preço, Variação, Volume e Horário).
 * **Insights Automáticos**: A IA gera automaticamente um "Insight de Decisão" (📌) e um "Alerta de Risco" (⚠️) para cada análise.
-* **Fontes de Notícias Confiáveis**: Busca de notícias direto do Google News via Proxy (sem limites de API "demo").
+* **Fontes de Notícias Confiáveis**: Busca de notícias direto do Google News via Proxy.
 * **Pipeline Híbrido**: Processamento rápido usando léxico combinado com precisão de LLMs.
-* **Serverless Seguro**: O token da OpenRouter está blindado no backend da Vercel.
+* **Serverless Seguro**: Proteção de tokens e proxies de busca via Vercel Edge.
 
 ## 🛠️ Tecnologias
 * **Frontend**: React + Vite + CSS puro (Glassmorphism & Dark Mode)

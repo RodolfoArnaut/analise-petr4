@@ -96,8 +96,8 @@ async function fetchAI(apiKey, messages, modelIndex = 0, maxTokens = 60) {
   let url = 'https://openrouter.ai/api/v1/chat/completions';
   let headers = {
     'Content-Type': 'application/json',
-    'HTTP-Referer': 'https://petra-analysis.app',
-    'X-Title': 'PETRA Analysis'
+    'HTTP-Referer': 'https://liberty-analytics.app',
+    'X-Title': 'Liberty Analytics'
   };
   let body = {
     messages,

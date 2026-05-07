@@ -12,10 +12,10 @@ import {
 // =====================================================
 // TOKEN STORAGE — sessionStorage only (clears on tab close)
 // =====================================================
-const TOKEN_KEY = 'petra_or_token';
+const TOKEN_KEY = 'liberty_analytics_token';
 const getStoredToken = () => { try { return sessionStorage.getItem(TOKEN_KEY) || ''; } catch { return ''; } };
 const storeToken = (t) => { try { sessionStorage.setItem(TOKEN_KEY, t); } catch { } };
-const clearToken = () => { try { sessionStorage.removeItem(TOKEN_KEY); } catch { } };
+const clearToken = () => { try { sessionStorage.removeItem(TOKEN_KEY) || localStorage.removeItem(TOKEN_KEY); } catch { } };
 
 // =====================================================
 // FREE TIER LOGIC
@@ -24,7 +24,7 @@ const FREE_LIMIT = 3;
 
 const getUsage = () => {
   try {
-    const data = JSON.parse(localStorage.getItem('petra_usage')) || { date: '', count: 0 };
+    const data = JSON.parse(localStorage.getItem('liberty_usage')) || { date: '', count: 0 };
     const today = new Date().toISOString().split('T')[0];
     if (data.date !== today) return { date: today, count: 0 };
     return data;
@@ -36,7 +36,7 @@ const getUsage = () => {
 const incrementUsage = () => {
   const usage = getUsage();
   usage.count += 1;
-  localStorage.setItem('petra_usage', JSON.stringify(usage));
+  localStorage.setItem('liberty_usage', JSON.stringify(usage));
 };
 
 // =====================================================
@@ -273,6 +273,10 @@ export default function App() {
       isUsingFreeTier = true;
     }
 
+    const currentTicker = tickerInput.trim().toUpperCase();
+    if (!currentTicker) return;
+    setTicker(currentTicker);
+
     setIsProcessing(true);
     setProcessedNews([]);
     setAnalysis(null);
@@ -283,17 +287,17 @@ export default function App() {
     setQuote(null);
 
     try {
-      log(`Buscando cotação de ${ticker}...`, 'info');
-      const quoteData = await fetchQuote(ticker);
+      log(`Buscando cotação de ${currentTicker}...`, 'info');
+      const quoteData = await fetchQuote(currentTicker);
       if (quoteData) {
         setQuote(quoteData);
         log(`Cotação: R$ ${quoteData.price.toFixed(2)} (${quoteData.changePercent >= 0 ? '+' : ''}${quoteData.changePercent.toFixed(2)}%)`, 'ok');
       } else {
-        log(`Não foi possível obter cotação de ${ticker}.`, 'info');
+        log(`Não foi possível obter cotação de ${currentTicker}.`, 'info');
       }
 
-      log(`Buscando notícias sobre ${ticker}...`, 'info');
-      const { articles, source } = await fetchNews(ticker);
+      log(`Buscando notícias sobre ${currentTicker}...`, 'info');
+      const { articles, source } = await fetchNews(currentTicker);
       setNewsSource(source);
       log(`${articles.length} notícias via ${source}`, 'ok');
       setProgress({ current: 0, total: articles.length });
@@ -368,8 +372,25 @@ export default function App() {
       {/* SIDEBAR */}
       <aside className="sidebar">
         <div className="logo">
-          <div className="logo-icon"><BarChart3 size={18} color="#000" /></div>
-          <span>PETRA</span>
+          <div className="logo-icon"><Zap size={18} color="#000" /></div>
+          <span>LIBERTY</span>
+        </div>
+
+        <div className="nav-section">
+          <div className="nav-label">Ativo para Analisar</div>
+          <div className="ticker-search-box">
+            <input
+              type="text"
+              className="ticker-input"
+              value={tickerInput}
+              onChange={(e) => setTickerInput(e.target.value.toUpperCase())}
+              placeholder="Ex: PETR4, VALE3..."
+              onKeyDown={(e) => e.key === 'Enter' && setTicker(tickerInput)}
+            />
+            <button className="ticker-btn" onClick={() => setTicker(tickerInput)}>
+              <RefreshCw size={14} />
+            </button>
+          </div>
         </div>
 
         <div className="nav-section">
@@ -425,8 +446,8 @@ export default function App() {
       <main className="main-content">
         <header className="dashboard-header">
           <div className="header-left">
-            <h1>Análise de Sentimento</h1>
-            <p>Pipeline híbrido · Léxico financeiro + IA · 100% local</p>
+            <h1>Liberty Analytics</h1>
+            <p>Inteligência Financeira Híbrida · Léxico + IA</p>
           </div>
           <div className="header-right">
             <div className="date-badge">{todayStr}</div>
