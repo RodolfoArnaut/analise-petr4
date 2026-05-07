@@ -188,46 +188,60 @@ export async function classifySentiment(apiKey, title, modelIndex = 0) {
 // =====================================================
 // SUMMARY GENERATION (Now returns structured data)
 // =====================================================
-export async function generateSummary(apiKey, stats, newsItems, modelIndex = 0) {
+export async function generateSummary(apiKey, stats, newsItems, modelIndex = 2) {
+  // Aumentamos o limite para garantir que o texto longo não seja cortado
   const titles = newsItems.slice(0, 10).map(n => `- ${n.title}`).join('\n');
   
   const { text } = await fetchAI(apiKey, [
     {
       role: 'system',
-      content: `Você é um analista sênior da Liberty Analytics. Analise o contexto das notícias e as métricas para gerar um relatório robusto.
-Responda APENAS com um JSON válido, sem blocos de código ou markdown.
-Estrutura:
+      content: `Você é um analista sênior da Liberty Analytics.
+Gere um relatório detalhado em JSON. 
+IMPORTANTE: RESPONDA APENAS O JSON, SEM MARKDOWN, SEM TEXTO ANTES OU DEPOIS.
+Estrutura exigida:
 {
-  "summary": "Resumo detalhado (mínimo 60 palavras) conectando as notícias ao sentimento geral.",
-  "insight": "Análise técnica para tomada de decisão (mínimo 40 palavras).",
-  "risk": "Fatores de risco específicos identificados (mínimo 40 palavras)."
+  "summary": "Parágrafo detalhado (80-120 palavras) conectando notícias e métricas.",
+  "insight": "Análise estratégica profunda (mínimo 50 palavras).",
+  "risk": "Fatores de risco detalhados (mínimo 50 palavras)."
 }`
     },
     {
       role: 'user',
       content: `Métricas: Positivas:${stats.pos} Negativas:${stats.neg} Neutras:${stats.neu} Score:${stats.score.toFixed(2)}
-Principais notícias:
+Notícias:
 ${titles}`
     }
-  ], modelIndex, 800);
+  ], modelIndex, 1200);
   
   try {
-    // Tenta extrair JSON caso a IA envolva em ```json ou texto extra
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    const cleanText = jsonMatch ? jsonMatch[0] : text;
+    // Limpeza agressiva para encontrar o objeto JSON
+    const jsonStart = text.indexOf('{');
+    const jsonEnd = text.lastIndexOf('}') + 1;
+    const cleanText = (jsonStart !== -1 && jsonEnd > jsonStart) 
+      ? text.substring(jsonStart, jsonEnd) 
+      : text;
+      
     const parsed = JSON.parse(cleanText);
     
     return {
-      summary: parsed.summary || 'Sem resumo disponível.',
-      insight: parsed.insight || 'Sem insight disponível.',
-      risk: parsed.risk || 'Sem análise de risco disponível.'
+      summary: parsed.summary || 'Resumo indisponível.',
+      insight: parsed.insight || 'Insight indisponível.',
+      risk: parsed.risk || 'Análise de risco indisponível.'
     };
   } catch (e) {
-    console.error('Erro ao processar JSON da IA:', e, text);
+    console.error('Falha crítica no parsing de IA:', e, text);
+    
+    // Se falhar o JSON, tentamos limpar as aspas e chaves do texto para não exibir código para o usuário
+    const fallbackText = text
+      .replace(/\{"summary":\s*"/g, '')
+      .replace(/"\s*,\s*"insight":[\s\S]*/g, '')
+      .replace(/"\}/g, '')
+      .trim();
+
     return {
-      summary: text.length > 50 ? text : 'Erro ao gerar resumo detalhado. Verifique sua conexão ou token.',
-      insight: 'Não foi possível gerar um insight estruturado no momento.',
-      risk: 'Atenção redobrada à volatilidade devido à falha na análise técnica.'
+      summary: fallbackText.length > 20 ? fallbackText : 'Ocorreu um erro na geração da análise. Tente novamente.',
+      insight: 'A análise estratégica foi interrompida devido a um erro técnico.',
+      risk: 'A volatilidade não pôde ser calculada com precisão no momento.'
     };
   }
 }

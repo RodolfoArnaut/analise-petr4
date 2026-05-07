@@ -29,14 +29,14 @@ export default async function handler(req, res) {
       headers: {
         'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://petra-analysis.app',
-        'X-Title': 'PETRA Analysis Serverless'
+        'HTTP-Referer': 'https://liberty-analytics.app',
+        'X-Title': 'Liberty Analytics Serverless'
       },
       body: JSON.stringify({
         model: modelToUse,
         messages,
         temperature: 0.1,
-        max_tokens: max_tokens || 60
+        max_tokens: max_tokens || 1000
       })
     });
 
