@@ -44,24 +44,42 @@ const incrementUsage = () => {
 // =====================================================
 function ScoreGauge({ score }) {
   const pct = ((score + 1) / 2) * 100;
-  const angle = -90 + (pct / 100) * 180;
-  const color = score > 0.2 ? '#10b981' : score < -0.2 ? '#ef4444' : '#f59e0b';
+  const arcLength = 188.5;
+  const strokeDashoffset = arcLength - (pct / 100) * arcLength;
+  
+  const getSentimentLabel = (s) => {
+    if (s >= 0.5) return 'Forte Positivo';
+    if (s > 0.1) return 'Levemente Positivo';
+    if (s >= -0.1) return 'Neutro';
+    if (s > -0.5) return 'Levemente Negativo';
+    return 'Forte Negativo';
+  };
+
+  const color = score > 0.1 ? 'var(--accent-green)' : score < -0.1 ? 'var(--accent-red)' : 'var(--accent-amber)';
+  const label = getSentimentLabel(score);
+
   return (
-    <div className="gauge-container">
-      <svg className="gauge-svg" viewBox="0 0 140 80">
-        <path d="M 10 75 A 60 60 0 0 1 130 75" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="8" strokeLinecap="round" />
-        <path d="M 10 75 A 60 60 0 0 1 130 75" fill="none" stroke={color} strokeWidth="8" strokeLinecap="round"
-          strokeDasharray={`${pct * 1.88} 188`} style={{ filter: `drop-shadow(0 0 6px ${color})` }} />
-        <line x1="70" y1="75" x2={70 + 40 * Math.cos((angle * Math.PI) / 180)} y2={75 + 40 * Math.sin((angle * Math.PI) / 180)}
-          stroke={color} strokeWidth="2.5" strokeLinecap="round" />
-        <circle cx="70" cy="75" r="4" fill={color} />
-        <text x="70" y="62" textAnchor="middle" fill={color} fontSize="18" fontWeight="800" fontFamily="JetBrains Mono, monospace">
-          {score >= 0 ? '+' : ''}{score.toFixed(2)}
-        </text>
-        <text x="15" y="80" fill="#4a4f5c" fontSize="8" fontFamily="Inter">-1</text>
-        <text x="122" y="80" fill="#4a4f5c" fontSize="8" fontFamily="Inter">+1</text>
-      </svg>
-      <div className="gauge-label">Sentiment Score</div>
+    <div className="premium-gauge">
+      <div className="gauge-chart">
+        <svg viewBox="0 0 140 80" className="gauge-svg">
+          <path d="M 10 75 A 60 60 0 0 1 130 75" fill="none" stroke="var(--bg-tertiary)" strokeWidth="12" strokeLinecap="round" />
+          <path d="M 10 75 A 60 60 0 0 1 130 75" fill="none" stroke={color} strokeWidth="12" strokeLinecap="round"
+            strokeDasharray={arcLength} strokeDashoffset={strokeDashoffset} 
+            className="gauge-fill-anim"
+            style={{ filter: `drop-shadow(0 0 8px ${color}80)` }} />
+        </svg>
+        <div className="gauge-core">
+          <div className="gauge-score" style={{ color, textShadow: `0 0 16px ${color}60` }}>
+            {score > 0 ? '+' : ''}{score.toFixed(2)}
+          </div>
+          <div className="gauge-label-text">{label}</div>
+        </div>
+      </div>
+      <div className="gauge-legend">
+        <span>-1 (Neg)</span>
+        <span>0</span>
+        <span>+1 (Pos)</span>
+      </div>
     </div>
   );
 }
@@ -70,18 +88,28 @@ function ScoreGauge({ score }) {
 // BAR CHART
 // =====================================================
 function SentimentChart({ stats }) {
-  const max = Math.max(stats.pos, stats.neg, stats.neu, 1);
+  const total = stats.total || 1;
+  const data = [
+    { label: 'Positivo', val: stats.pos, pct: (stats.pos / total) * 100, color: 'var(--accent-green)', bg: 'var(--accent-green-dim)' },
+    { label: 'Neutro', val: stats.neu, pct: (stats.neu / total) * 100, color: 'var(--accent-amber)', bg: 'var(--accent-amber-dim)' },
+    { label: 'Negativo', val: stats.neg, pct: (stats.neg / total) * 100, color: 'var(--accent-red)', bg: 'var(--accent-red-dim)' },
+  ];
+
   return (
-    <div className="chart-bar-container">
-      {[
-        { val: stats.pos, color: 'green', label: 'Pos', cls: 'text-green' },
-        { val: stats.neg, color: 'red',   label: 'Neg', cls: 'text-red'   },
-        { val: stats.neu, color: 'amber', label: 'Neu', cls: 'text-amber' },
-      ].map(({ val, color, label, cls }) => (
-        <div key={label} className="chart-bar-wrapper">
-          <div className={`chart-value ${cls}`}>{val}</div>
-          <div className={`chart-bar ${color}`} style={{ height: `${(val / max) * 100}%` }} />
-          <div className="chart-label">{label}</div>
+    <div className="premium-dist-chart">
+      {data.map((item) => (
+        <div key={item.label} className="dist-row">
+          <div className="dist-info">
+            <span className="dist-label">{item.label}</span>
+            <span className="dist-val">{item.val} <span className="dist-pct">{item.pct.toFixed(0)}%</span></span>
+          </div>
+          <div className="dist-track">
+            <div className="dist-fill" style={{ 
+              width: `${item.pct}%`, 
+              backgroundColor: item.color,
+              boxShadow: `0 0 12px ${item.bg}`
+            }} />
+          </div>
         </div>
       ))}
     </div>
@@ -92,29 +120,59 @@ function SentimentChart({ stats }) {
 // TREND LINE CHART
 // =====================================================
 function SentimentTrend({ history }) {
-  if (history.length < 2) return <div className="empty-trend">Aguardando dados...</div>;
+  if (history.length < 2) return <div className="empty-trend">Aguardando mais dados da sessão...</div>;
   
   const width = 300;
   const height = 100;
-  const padding = 10;
+  const paddingX = 12;
+  const paddingY = 16;
   
-  const points = history.map((score, i) => {
-    const x = padding + (i / (history.length - 1)) * (width - 2 * padding);
-    const y = (height / 2) - (score * (height / 2 - padding));
-    return `${x},${y}`;
-  }).join(' ');
+  const usableWidth = width - 2 * paddingX;
+  const usableHeight = height - 2 * paddingY;
+  
+  const getX = (i) => paddingX + (i / (history.length - 1)) * usableWidth;
+  const getY = (score) => paddingY + usableHeight / 2 - (score * (usableHeight / 2));
+
+  const linePath = history.map((score, i) => `${i === 0 ? 'M' : 'L'} ${getX(i)} ${getY(score)}`).join(' ');
+  const areaPath = `${linePath} L ${getX(history.length - 1)} ${height} L ${getX(0)} ${height} Z`;
 
   return (
-    <div className="trend-container">
-      <svg width="100%" height={height} viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none">
-        <line x1="0" y1={height / 2} x2={width} y2={height / 2} stroke="rgba(255,255,255,0.1)" strokeWidth="1" strokeDasharray="4" />
-        <polyline fill="none" stroke="var(--accent-cyan)" strokeWidth="2" strokeLinejoin="round" points={points} />
+    <div className="premium-trend-container">
+      <svg width="100%" height="100%" viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none" className="trend-svg">
+        <defs>
+          <linearGradient id="trendArea" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="var(--accent-cyan)" stopOpacity="0.25" />
+            <stop offset="100%" stopColor="var(--accent-cyan)" stopOpacity="0" />
+          </linearGradient>
+          <linearGradient id="trendLine" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stopColor="var(--accent-cyan)" />
+            <stop offset="100%" stopColor="#0080ff" />
+          </linearGradient>
+        </defs>
+        
+        <line x1="0" y1={height / 2} x2={width} y2={height / 2} stroke="var(--border-color)" strokeWidth="1" strokeDasharray="4 4" />
+        
+        <path d={areaPath} fill="url(#trendArea)" className="trend-area-anim" />
+        <path d={linePath} fill="none" stroke="url(#trendLine)" strokeWidth="3" strokeLinejoin="round" strokeLinecap="round" style={{ filter: 'drop-shadow(0 4px 6px rgba(0,212,255,0.4))' }} className="trend-line-anim" />
+        
         {history.map((score, i) => {
-           const x = padding + (i / (history.length - 1)) * (width - 2 * padding);
-           const y = (height / 2) - (score * (height / 2 - padding));
-           return <circle key={i} cx={x} cy={y} r="3" fill={score > 0 ? '#10b981' : score < 0 ? '#ef4444' : '#f59e0b'} />;
+           const x = getX(i);
+           const y = getY(score);
+           const color = score > 0.1 ? 'var(--accent-green)' : score < -0.1 ? 'var(--accent-red)' : 'var(--accent-amber)';
+           return (
+             <g key={i} className="trend-point-group">
+               <circle cx={x} cy={y} r="3.5" fill="var(--bg-card)" stroke={color} strokeWidth="2.5" className="trend-point" />
+               <circle cx={x} cy={y} r="14" fill="transparent" className="trend-hover-area">
+                 <title>Score: {score.toFixed(2)}</title>
+               </circle>
+             </g>
+           );
         })}
       </svg>
+      <div className="trend-axis-x">
+        <span>Início</span>
+        <span className="trend-live-badge"><span className="live-dot"></span> Agora</span>
+      </div>
     </div>
   );
 }
